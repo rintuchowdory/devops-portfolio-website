@@ -1,0 +1,168 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Rintu Chowdory | DevOps Portfolio">
+  <!-- Mobile top bar -->
+  <div class="navbar bg-base-100 shadow sticky top-0 z-50">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl">Rintu Chowdory</a>
+    </div>
+    <div class="flex-none">
+      <a class="btn btn-sm btn-outline" href="https://github.com/rintuchowdory" target="_blank" rel="noreferrer">GitHub</a>
+    </div>
+  </div>
+
+  <div class="min-h-[calc(100vh-64px)] grid lg:grid-cols-[280px_1fr]">
+    <!-- Desktop sidebar -->
+    <aside class="hidden lg:block bg-base-100 border-r border-base-200 p-4">
+      <div class="space-y-4">
+        <div class="card bg-base-200">
+          <div class="card-body">
+            <h2 class="card-title">Dashboard</h2>
+            <p class="text-base-content/70">DevOps learning projects</p>
+          </div>
+        </div>
+
+        <ul class="menu bg-base-100 rounded-box">
+          <li><a class="active">Overview</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <div class="alert alert-info">
+          <span class="text-sm">Tip: Try different themes in DaisyUI later (cupcake, corporate, synthwave, etc.).</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="p-4 md:p-8 space-y-8">
+      <!-- Tailwind visual test banner -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-bold shadow-xl">
+        Tailwind is working ✅
+      </div>
+
+      <!-- Hero -->
+      <section class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h1 class="text-3xl md:text-4xl font-bold">DevOps Portfolio</h1>
+          <p class="text-base-content/70">
+            Learning Linux, CI/CD, Docker, Kubernetes, GitHub, and automation by building real projects.
+          </p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="badge badge-primary">Linux</span>
+            <span class="badge badge-secondary">CI/CD</span>
+            <span class="badge badge-accent">Docker</span>
+            <span class="badge badge-info">Kubernetes</span>
+            <span class="badge badge-success">GitHub Actions</span>
+            <span class="badge badge-warning">Automation</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPI cards -->
+      <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="stat bg-base-100 rounded-box shadow">
+          <div class="stat-title">Main project</div>
+          <div class="stat-value text-primary">FastAPI</div>
+          <div class="stat-desc">Microservice + CI</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+          <div class="stat-title">Containers</div>
+          <div class="stat-value text-secondary">Docker</div>
+          <div class="stat-desc">Build + run + publish</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+          <div class="stat-title">CI/CD</div>
+          <div class="stat-value text-accent">Actions</div>
+          <div class="stat-desc">Tests + GHCR push</div>
+        </div>
+
+        <div class="stat bg-base-100 rounded-box shadow">
+          <div class="stat-title">Next target</div>
+          <div class="stat-value text-info">K8s</div>
+          <div class="stat-desc">Helm + GitOps</div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects" class="card bg-base-100 shadow">
+        <div class="card-body">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="card-title text-2xl">Projects</h2>
+            <div class="badge badge-outline">Updated</div>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="card bg-base-200">
+              <div class="card-body">
+                <h3 class="card-title">devops-portfolio-microservice</h3>
+                <p class="text-base-content/70">FastAPI API with tests, Docker, GitHub Actions, and GHCR publish.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="badge badge-outline">FastAPI</span>
+                  <span class="badge badge-outline">Pytest</span>
+                  <span class="badge badge-outline">Docker</span>
+                  <span class="badge badge-outline">GHCR</span>
+                </div>
+                <div class="card-actions justify-end">
+                  <a class="btn btn-primary btn-sm" href="https://github.com/rintuchowdory/devops-portfolio-microservice" target="_blank" rel="noreferrer">View Repo</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="card bg-base-200">
+              <div class="card-body">
+                <h3 class="card-title">devops-portfolio-website</h3>
+                <p class="text-base-content/70">Astro portfolio site with dashboard UI.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="badge badge-outline">Astro</span>
+                  <span class="badge badge-outline">Tailwind</span>
+                  <span class="badge badge-outline">DaisyUI</span>
+                </div>
+                <div class="card-actions justify-end">
+                  <span class="btn btn-ghost btn-sm">Deploy next</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Roadmap -->
+      <section id="roadmap" class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-2xl">Roadmap</h2>
+          <ul class="steps steps-vertical lg:steps-horizontal">
+            <li class="step step-primary">Microservice</li>
+            <li class="step step-primary">CI + GHCR</li>
+            <li class="step">Deploy API</li>
+            <li class="step">Kubernetes + Helm</li>
+            <li class="step">GitOps</li>
+            <li class="step">Terraform</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-2xl">Contact</h2>
+          <p class="text-base-content/70">GitHub: rintuchowdory</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <div class="btm-nav lg:hidden">
+    <a class="active" href="#"><span class="btm-nav-label">Home</span></a>
+    <a href="#projects"><span class="btm-nav-label">Projects</span></a>
+    <a href="#roadmap"><span class="btm-nav-label">Roadmap</span></a>
+    <a href="#contact"><span class="btm-nav-label">Contact</span></a>
+  </div>
+</BaseLayout>
+
