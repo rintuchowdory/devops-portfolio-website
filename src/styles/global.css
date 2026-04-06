@@ -1,1 +1,16 @@
-@import "tailwindcss";
+@import "tailwindcss";.glass-panel {
+  background: rgba(17, 25, 40, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+}
+
+.bg-hero {
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.45), transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(59, 130, 246, 0.45), transparent 45%),
+    radial-gradient(circle at 40% 90%, rgba(236, 72, 153, 0.35), transparent 50%),
+    linear-gradient(135deg, #0b1020, #050714);
+}

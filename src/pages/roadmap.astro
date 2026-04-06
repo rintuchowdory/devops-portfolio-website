@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Roadmap | Rintu Chowdory">
+  <div class="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <h1 class="text-3xl font-bold">Roadmap</h1>
+        <p class="text-base-content/70">What I’m building next.</p>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/">Home</a>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl border border-base-300">
+      <div class="card-body">
+        <ul class="steps steps-vertical">
+          <li class="step step-primary">Microservice</li>
+          <li class="step step-primary">CI + GHCR</li>
+          <li class="step">Deploy API</li>
+          <li class="step">Kubernetes + Helm</li>
+          <li class="step">GitOps</li>
+          <li class="step">Terraform</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

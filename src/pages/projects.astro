@@ -1,0 +1,47 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const projects = [
+  {
+    name: "devops-portfolio-microservice",
+    desc: "FastAPI API with tests, Docker, GitHub Actions, and GHCR publish.",
+    url: "https://github.com/rintuchowdory/devops-portfolio-microservice",
+    tags: ["FastAPI", "Pytest", "Docker", "GHCR"],
+  },
+  {
+    name: "devops-portfolio-website",
+    desc: "Astro portfolio site with dashboard UI.",
+    url: "https://github.com/rintuchowdory/devops-portfolio-website",
+    tags: ["Astro", "Tailwind", "DaisyUI"],
+  },
+];
+---
+
+<BaseLayout title="Projects | Rintu Chowdory">
+  <div class="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <h1 class="text-3xl font-bold">Projects</h1>
+        <p class="text-base-content/70">Portfolio projects with production style tooling.</p>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/">Home</a>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      {projects.map((p) => (
+        <div class="card bg-base-100 shadow-xl border border-base-300">
+          <div class="card-body">
+            <h2 class="card-title">{p.name}</h2>
+            <p class="text-base-content/70">{p.desc}</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              {p.tags.map((t) => <span class="badge badge-outline">{t}</span>)}
+            </div>
+            <div class="card-actions justify-end mt-4">
+              <a class="btn btn-primary" href={p.url} target="_blank" rel="noreferrer">View Repo</a>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
