@@ -1,0 +1,418 @@
+---
+/**
+ * DevOps Mesh — Live Dashboard Page
+ * File: src/pages/dashboard.astro
+ *
+ * Fetches all data from FastAPI at build time (SSR) with client-side
+ * polling every 5s for live updates via fetch.
+ */
+import { api } from "../lib/api";
+
+// Fetch all data in parallel at request time
+let summary, services, pipelines, k8s, logs, apiOnline;
+
+try {
+  [summary, services, pipelines, k8s, logs] = await Promise.all([
+    api.summary(),
+    api.services(),
+    api.pipelines(),
+    api.kubernetes(),
+    api.logs({ limit: 12 }),
+  ]);
+  apiOnline = true;
+} catch (e) {
+  apiOnline = false;
+  // Fallback so page still renders
+  summary  = { services_up:11,services_degraded:1,services_down:0,avg_response_ms:142,deployments_today:7,deployments_passed:6,deployments_failed:1,active_alerts:2,total_req_per_min:4880,overall_error_rate:0.43,generated_at:"--" };
+  services  = { total:6,up:5,degraded:1,down:0,services:[] };
+  pipelines = { total:3,running:1,passed:1,failed:1,pipelines:[] };
+  k8s       = { total_namespaces:4,total_pods:15,healthy_pods:14,namespaces:[] };
+  logs      = { total:0,entries:[] };
+}
+
+function statusColor(s: string) {
+  return s==="up"||s==="passed"||s==="healthy" ? "#1D9E75"
+       : s==="degraded"||s==="running"||s==="warning" ? "#EF9F27"
+       : "#E24B4A";
+}
+function statusLabel(s: string) {
+  return s==="up"?"UP":s==="degraded"?"DEG":s==="down"?"DOWN"
+       : s==="passed"?"PASS":s==="running"?"RUN":s==="failed"?"FAIL"
+       : s==="queued"?"WAIT":s==="skipped"?"SKIP":s.toUpperCase();
+}
+function logColor(l: string) {
+  return l==="INFO"?"#6b8aad":l==="WARN"?"#EF9F27":l==="ERROR"?"#E24B4A":"#1D9E75";
+}
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Mesh — Live Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #060d1a;
+      --surf:    #0d1b2e;
+      --surf2:   #112240;
+      --bdr:     #1e3a5f;
+      --amber:   #EF9F27;
+      --teal:    #1D9E75;
+      --blue:    #378ADD;
+      --red:     #E24B4A;
+      --green:   #639922;
+      --text:    #c8d8f0;
+      --dim:     #6b8aad;
+      --mono:    'JetBrains Mono', monospace;
+      --head:    'Syne', sans-serif;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; background:var(--surf); border-bottom:1px solid var(--bdr); position:sticky; top:0; z-index:10; }
+    .logo { font-family:var(--head); font-size:20px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+    .logo em { color:var(--amber); font-style:normal; }
+    .hdr-right { display:flex; align-items:center; gap:16px; }
+    .api-pill { font-size:10px; padding:3px 10px; border-radius:20px; letter-spacing:1px; text-transform:uppercase; border:1px solid; }
+    .api-pill.ok  { color:var(--teal);  border-color:rgba(29,158,117,.4);  background:rgba(29,158,117,.1);  }
+    .api-pill.err { color:var(--red);   border-color:rgba(226,75,74,.4);   background:rgba(226,75,74,.1);   }
+    .dot { width:7px; height:7px; border-radius:50%; background:var(--teal); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+    #clock { font-size:11px; color:var(--dim); }
+
+    /* ── LAYOUT ── */
+    .wrap   { max-width:1400px; margin:0 auto; padding:24px 28px; display:flex; flex-direction:column; gap:24px; }
+    .row    { display:grid; gap:16px; }
+    .row-4  { grid-template-columns:repeat(4,1fr); }
+    .row-3  { grid-template-columns:repeat(3,1fr); }
+    .row-2  { grid-template-columns:repeat(2,1fr); }
+    .row-42 { grid-template-columns:2fr 1fr; }
+
+    /* ── SECTION ── */
+    .sec-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .sec-title { font-family:var(--head); font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:2px; }
+    .sec-badge { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--surf2); border:1px solid var(--bdr); color:var(--dim); }
+
+    /* ── CARD BASE ── */
+    .card { background:var(--surf); border:1px solid var(--bdr); border-radius:10px; padding:16px; }
+    .card.accent-amber { border-top:2px solid var(--amber); }
+    .card.accent-teal  { border-top:2px solid var(--teal);  }
+    .card.accent-blue  { border-top:2px solid var(--blue);  }
+    .card.accent-red   { border-top:2px solid var(--red);   }
+
+    /* ── METRIC CARD ── */
+    .m-label { font-size:10px; letter-spacing:1px; color:var(--dim); text-transform:uppercase; margin-bottom:6px; }
+    .m-val   { font-size:28px; font-weight:800; font-family:var(--head); color:#fff; line-height:1; }
+    .m-val sub { font-size:13px; font-weight:400; color:var(--dim); margin-left:3px; font-family:var(--mono); }
+    .m-sub   { font-size:11px; margin-top:5px; }
+
+    /* ── STATUS BADGE ── */
+    .badge { font-size:9px; padding:3px 8px; border-radius:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; border:1px solid; }
+
+    /* ── SERVICE CARD ── */
+    .svc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .svc-card { background:var(--surf); border:1px solid var(--bdr); border-radius:10px; padding:14px; transition:border-color .2s, transform .2s; cursor:pointer; }
+    .svc-card:hover { border-color:var(--amber); transform:translateY(-2px); background:var(--surf2); }
+    .svc-top  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .svc-icon { width:34px; height:34px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+    .svc-name { font-family:var(--head); font-size:13px; font-weight:800; color:#fff; margin-bottom:2px; }
+    .svc-desc { font-size:10px; color:var(--dim); }
+    .svc-stats{ display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px; padding-top:10px; border-top:1px solid var(--bdr); }
+    .ss { font-size:10px; color:var(--dim); }
+    .ss strong { display:block; font-size:12px; color:var(--text); font-family:var(--head); font-weight:700; }
+    .bar { height:3px; background:var(--bdr); border-radius:2px; margin-top:8px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:2px; }
+
+    /* ── PIPELINE ── */
+    .stage { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:11px; border-bottom:1px solid rgba(30,58,95,.3); }
+    .stage:last-child { border-bottom:none; }
+    .stage-ic { width:18px; height:18px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; }
+    .s-ok   { background:rgba(29,158,117,.2);  color:var(--teal); }
+    .s-run  { background:rgba(55,138,221,.2);   color:var(--blue); animation:blink .8s infinite; }
+    .s-fail { background:rgba(226,75,74,.2);    color:var(--red);  }
+    .s-wait { background:rgba(107,138,173,.15); color:var(--dim);  }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+    .stage-name { flex:1; color:var(--text); }
+    .stage-dur  { font-size:10px; color:var(--dim); }
+    .pipe-meta  { font-size:10px; color:var(--dim); margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--bdr); display:flex; gap:10px; flex-wrap:wrap; }
+    .pipe-meta span { color:var(--text); }
+
+    /* ── K8S ── */
+    .k8s-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .pod-dots { display:flex; flex-wrap:wrap; gap:4px; margin:8px 0; }
+    .pod-dot  { width:10px; height:10px; border-radius:2px; }
+    .k-row    { display:flex; justify-content:space-between; font-size:10px; color:var(--dim); margin-top:4px; }
+    .k-row span { color:var(--text); }
+    .k-ns   { font-size:9px; letter-spacing:1px; color:var(--dim); text-transform:uppercase; margin-bottom:4px; }
+    .k-name { font-family:var(--head); font-size:13px; font-weight:700; color:#fff; margin-bottom:4px; }
+
+    /* ── LOGS ── */
+    .log-line { display:grid; grid-template-columns:70px 100px 60px 1fr; gap:8px; font-size:10px; padding:5px 0; border-bottom:1px solid rgba(30,58,95,.25); align-items:start; }
+    .log-line:last-child { border-bottom:none; }
+    .log-ts  { color:var(--dim); }
+    .log-svc { color:var(--amber); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .log-msg { color:var(--text); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .row-4 { grid-template-columns:1fr 1fr; }
+      .row-3, .svc-grid { grid-template-columns:1fr 1fr; }
+      .k8s-grid { grid-template-columns:1fr 1fr; }
+      .row-42 { grid-template-columns:1fr; }
+    }
+    @media (max-width: 600px) {
+      .row-4, .row-3, .row-2, .svc-grid, .k8s-grid { grid-template-columns:1fr; }
+      .log-line { grid-template-columns:60px 80px 1fr; }
+      .log-line .log-level { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">DEVOPS<em>.</em>MESH</div>
+  <div class="hdr-right">
+    <div class={`api-pill ${apiOnline ? "ok" : "err"}`}>
+      API {apiOnline ? "LIVE" : "OFFLINE"}
+    </div>
+    <div class="dot"></div>
+    <div id="clock"></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ── SUMMARY METRICS ── -->
+  <section>
+    <div class="sec-hd">
+      <div class="sec-title">System Overview</div>
+      <div class="sec-badge" id="last-updated">Updated: {summary.generated_at}</div>
+    </div>
+    <div class="row row-4" id="metrics-row">
+      <div class="card accent-teal">
+        <div class="m-label">Services Up</div>
+        <div class="m-val" id="m-up">{summary.services_up}<sub>/ {services.total}</sub></div>
+        <div class="m-sub" style={`color:${summary.services_degraded>0?'var(--amber)':'var(--teal)'}`}>
+          {summary.services_degraded} degraded · {summary.services_down} down
+        </div>
+      </div>
+      <div class="card accent-amber">
+        <div class="m-label">Avg Response</div>
+        <div class="m-val" id="m-lat">{summary.avg_response_ms}<sub>ms</sub></div>
+        <div class="m-sub" style="color:var(--teal)">p50 across all services</div>
+      </div>
+      <div class="card accent-blue">
+        <div class="m-label">Deployments Today</div>
+        <div class="m-val" id="m-dep">{summary.deployments_today}<sub>builds</sub></div>
+        <div class="m-sub" style="color:var(--dim)">
+          {summary.deployments_passed} passed · <span style="color:var(--red)">{summary.deployments_failed} failed</span>
+        </div>
+      </div>
+      <div class="card accent-red">
+        <div class="m-label">Active Alerts</div>
+        <div class="m-val" id="m-alert">{summary.active_alerts}</div>
+        <div class="m-sub" style={`color:${summary.active_alerts>0?'var(--amber)':'var(--teal)'}`}>
+          {summary.total_req_per_min.toLocaleString()} req/min total
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SERVICES ── -->
+  <section>
+    <div class="sec-hd">
+      <div class="sec-title">Service Registry</div>
+      <div style="display:flex;gap:8px">
+        <div class="sec-badge" style="color:var(--teal)">{services.up} up</div>
+        <div class="sec-badge" style="color:var(--amber)">{services.degraded} degraded</div>
+      </div>
+    </div>
+    <div class="svc-grid" id="services-grid">
+      {services.services.map(svc => {
+        const col = svc.status==="up" ? "var(--teal)" : svc.status==="degraded" ? "var(--amber)" : "var(--red)";
+        const barW = Math.round(svc.stats.mem_pct);
+        const barC = barW>80 ? "var(--red)" : barW>60 ? "var(--amber)" : "var(--teal)";
+        return (
+          <div class="svc-card" data-id={svc.id}>
+            <div class="svc-top">
+              <div class="svc-icon" style={`background:${col}22;color:${col}`}>⬡</div>
+              <div class="badge" style={`color:${col};border-color:${col}55;background:${col}15`}>
+                {statusLabel(svc.status)}
+              </div>
+            </div>
+            <div class="svc-name">{svc.name}</div>
+            <div class="svc-desc">{svc.stack}</div>
+            <div class="svc-stats">
+              <div class="ss"><strong>{svc.stats.req_per_min.toLocaleString()}</strong>req/min</div>
+              <div class="ss"><strong>{svc.stats.uptime_pct}%</strong>uptime</div>
+              <div class="ss"><strong>{svc.stats.p50_ms}ms</strong>p50</div>
+              <div class="ss"><strong>{svc.stats.replicas}</strong>replicas</div>
+            </div>
+            <div class="bar">
+              <div class="bar-fill" style={`width:${barW}%;background:${barC}`}></div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- ── PIPELINES + K8S ── -->
+  <div class="row row-42">
+
+    <!-- PIPELINES -->
+    <section>
+      <div class="sec-hd">
+        <div class="sec-title">CI/CD Pipelines</div>
+        <div style="display:flex;gap:6px">
+          <div class="sec-badge" style="color:var(--blue)">{pipelines.running} running</div>
+          <div class="sec-badge" style="color:var(--red)">{pipelines.failed} failed</div>
+        </div>
+      </div>
+      <div class="row row-3" id="pipelines-grid">
+        {pipelines.pipelines.map(pipe => {
+          const col = pipe.status==="passed"?"var(--teal)":pipe.status==="running"?"var(--blue)":"var(--red)";
+          return (
+            <div class="card">
+              <div class="svc-top" style="margin-bottom:8px">
+                <div>
+                  <div class="svc-name">{pipe.service}</div>
+                  <div class="svc-desc" style="margin-top:2px">{pipe.branch}</div>
+                </div>
+                <div class="badge" style={`color:${col};border-color:${col}55;background:${col}15`}>
+                  {statusLabel(pipe.status)}
+                </div>
+              </div>
+              <div class="pipe-meta">
+                <div>sha: <span>{pipe.commit_sha}</span></div>
+                <div>by: <span>{pipe.author}</span></div>
+                <div>{pipe.triggered_at}</div>
+              </div>
+              {pipe.stages.map(st => {
+                const ic = st.status==="passed"?"s-ok":st.status==="running"?"s-run":st.status==="failed"?"s-fail":"s-wait";
+                const sym = st.status==="passed"?"✓":st.status==="running"?"▶":st.status==="failed"?"✗":"·";
+                return (
+                  <div class="stage">
+                    <div class={`stage-ic ${ic}`}>{sym}</div>
+                    <div class="stage-name">{st.name}</div>
+                    <div class="stage-dur">{st.duration_sec ? `${st.duration_sec}s` : st.status}</div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <!-- KUBERNETES -->
+    <section>
+      <div class="sec-hd">
+        <div class="sec-title">Kubernetes</div>
+        <div class="sec-badge">{k8s.healthy_pods}/{k8s.total_pods} pods</div>
+      </div>
+      <div class="k8s-grid" id="k8s-grid">
+        {k8s.namespaces.map(ns => (
+          <div class="card">
+            <div class="k-ns">{ns.namespace}</div>
+            <div class="k-name">{ns.cluster}</div>
+            <div class="pod-dots">
+              {ns.pods.map(p => (
+                <div class="pod-dot" style={`background:${p.status==="healthy"?"var(--teal)":p.status==="warning"?"var(--amber)":"var(--red)"}`} title={`${p.name} — ${p.restarts} restarts`}></div>
+              ))}
+            </div>
+            <div class="k-row">CPU <span>{ns.cpu_pct}%</span></div>
+            <div class="k-row">RAM <span>{ns.mem_pct}%</span></div>
+            <div class="k-row">Services <span>{ns.services_count}</span></div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── LIVE LOGS ── -->
+  <section>
+    <div class="sec-hd">
+      <div class="sec-title">Live Log Feed</div>
+      <div style="display:flex;gap:6px">
+        <div class="sec-badge" id="log-count">{logs.total} entries</div>
+        <div class="dot" style="align-self:center"></div>
+      </div>
+    </div>
+    <div class="card" id="log-panel">
+      {logs.entries.map(e => (
+        <div class="log-line">
+          <div class="log-ts">{e.timestamp}</div>
+          <div class="log-svc">{e.service}</div>
+          <div class="log-level badge" style={`color:${logColor(e.level)};border-color:${logColor(e.level)}44;background:${logColor(e.level)}11;padding:1px 5px;font-size:8px`}>{e.level}</div>
+          <div class="log-msg" style={`color:${logColor(e.level)}`}>{e.message}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+</main>
+
+<!-- ── CLIENT-SIDE LIVE POLLING ── -->
+<script>
+  const BASE = "http://127.0.0.1:8000";
+
+  // Clock
+  const clk = document.getElementById("clock")!;
+  function tick() {
+    const n = new Date();
+    clk.textContent = [n.getHours(),n.getMinutes(),n.getSeconds()]
+      .map(x=>String(x).padStart(2,"0")).join(":") + " UTC";
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Log color helper
+  function lc(l: string) {
+    return l==="INFO"?"#6b8aad":l==="WARN"?"#EF9F27":l==="ERROR"?"#E24B4A":"#1D9E75";
+  }
+
+  // Poll summary every 5s and update metric cards
+  async function pollSummary() {
+    try {
+      const s = await fetch(`${BASE}/api/v1/metrics/summary`).then(r=>r.json());
+      document.getElementById("m-up")!.innerHTML    = `${s.services_up}<sub>/ ${s.services_up+s.services_degraded+s.services_down}</sub>`;
+      document.getElementById("m-lat")!.innerHTML   = `${s.avg_response_ms}<sub>ms</sub>`;
+      document.getElementById("m-dep")!.innerHTML   = `${s.deployments_today}<sub>builds</sub>`;
+      document.getElementById("m-alert")!.innerHTML = `${s.active_alerts}`;
+      document.getElementById("last-updated")!.textContent = `Updated: ${s.generated_at}`;
+    } catch {}
+  }
+
+  // Poll logs every 4s and prepend new entries
+  async function pollLogs() {
+    try {
+      const data = await fetch(`${BASE}/api/v1/logs?limit=5`).then(r=>r.json());
+      const panel = document.getElementById("log-panel")!;
+      data.entries.reverse().forEach((e: any) => {
+        const div = document.createElement("div");
+        div.className = "log-line";
+        div.style.animation = "fadeIn .4s ease";
+        div.innerHTML = `
+          <div class="log-ts">${e.timestamp}</div>
+          <div class="log-svc">${e.service}</div>
+          <div class="log-level badge" style="color:${lc(e.level)};border-color:${lc(e.level)}44;background:${lc(e.level)}11;padding:1px 5px;font-size:8px">${e.level}</div>
+          <div class="log-msg" style="color:${lc(e.level)}">${e.message}</div>`;
+        panel.insertBefore(div, panel.firstChild);
+        if (panel.children.length > 20) panel.removeChild(panel.lastChild!);
+      });
+      document.getElementById("log-count")!.textContent = `${data.total} entries`;
+    } catch {}
+  }
+
+  setInterval(pollSummary, 5000);
+  setInterval(pollLogs,    4000);
+</script>
+
+</body>
+</html>
