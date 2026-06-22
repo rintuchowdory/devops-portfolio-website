@@ -7,12 +7,20 @@ const projects = [
     desc: "FastAPI API with tests, Docker, GitHub Actions, and GHCR publish.",
     url: "https://github.com/rintuchowdory/devops-portfolio-microservice",
     tags: ["FastAPI", "Pytest", "Docker", "GHCR"],
+    badge: "https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml/badge.svg",
+    badgeUrl: "https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml",
+    extra: "/api-docs",
+    extraLabel: "API Docs",
   },
   {
     name: "devops-portfolio-website",
     desc: "Astro portfolio site with dashboard UI.",
     url: "https://github.com/rintuchowdory/devops-portfolio-website",
     tags: ["Astro", "Tailwind", "DaisyUI"],
+    badge: "https://github.com/rintuchowdory/devops-portfolio-website/actions/workflows/deploy.yml/badge.svg",
+    badgeUrl: "https://github.com/rintuchowdory/devops-portfolio-website/actions/workflows/deploy.yml",
+    extra: null,
+    extraLabel: null,
   },
 ];
 ---
@@ -36,7 +44,17 @@ const projects = [
             <div class="flex flex-wrap gap-2 mt-2">
               {p.tags.map((t) => <span class="badge badge-outline">{t}</span>)}
             </div>
+            {p.badge && (
+              <div class="mt-3">
+                <a href={p.badgeUrl} target="_blank" rel="noreferrer">
+                  <img src={p.badge} alt="CI status" class="h-5" />
+                </a>
+              </div>
+            )}
             <div class="card-actions justify-end mt-4">
+              {p.extra && (
+                <a class="btn btn-outline btn-sm" href={p.extra}>{p.extraLabel}</a>
+              )}
               <a class="btn btn-primary" href={p.url} target="_blank" rel="noreferrer">View Repo</a>
             </div>
           </div>

@@ -1,0 +1,159 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const BASE_URL = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
+
+const endpoints = [
+  {
+    method: "GET",
+    path: "/health",
+    summary: "Health check",
+    desc: "Returns the current status and version of the API.",
+    response: `{ "status": "ok", "version": "1.0.0" }`,
+    color: "badge-success",
+  },
+  {
+    method: "GET",
+    path: "/",
+    summary: "Root",
+    desc: "Returns a welcome message confirming the API is reachable.",
+    response: `{ "message": "Hello from the DevOps Microservice!" }`,
+    color: "badge-success",
+  },
+  {
+    method: "GET",
+    path: "/docs",
+    summary: "Interactive API docs (Swagger UI)",
+    desc: "Auto-generated Swagger UI provided by FastAPI. Explore and test all endpoints interactively.",
+    response: "Opens Swagger UI in the browser.",
+    color: "badge-info",
+    link: `${BASE_URL}/docs`,
+  },
+  {
+    method: "GET",
+    path: "/redoc",
+    summary: "ReDoc documentation",
+    desc: "Alternative API reference rendered with ReDoc.",
+    response: "Opens ReDoc in the browser.",
+    color: "badge-info",
+    link: `${BASE_URL}/redoc`,
+  },
+];
+---
+
+<BaseLayout title="API Docs | Rintu Chowdory">
+  <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+
+    <!-- Header -->
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <h1 class="text-3xl font-bold">API Docs</h1>
+        <p class="text-base-content/70 mt-1">
+          devops-portfolio-microservice — FastAPI + Docker + GitHub Actions
+        </p>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/projects">Projects</a>
+    </div>
+
+    <!-- Live status bar -->
+    <div class="card bg-base-100 border border-base-300 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="flex items-center gap-3 flex-1">
+        <span id="api-dot2" class="inline-block w-3 h-3 rounded-full bg-gray-500 flex-shrink-0"></span>
+        <div>
+          <div class="font-semibold text-sm">
+            Live status: <span id="api-status2">Checking…</span>
+          </div>
+          <div class="text-xs text-base-content/50">{BASE_URL}</div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <a class="btn btn-sm btn-outline" href={`${BASE_URL}/docs`} target="_blank" rel="noreferrer">
+          Swagger UI ↗
+        </a>
+        <a class="btn btn-sm btn-outline" href="https://github.com/rintuchowdory/devops-portfolio-microservice" target="_blank" rel="noreferrer">
+          GitHub ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- CI Badge -->
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-base-content/60">CI/CD:</span>
+      <a href="https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml"
+         target="_blank" rel="noreferrer">
+        <img
+          src="https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml/badge.svg"
+          alt="CI status"
+          class="h-5"
+        />
+      </a>
+    </div>
+
+    <!-- Endpoints -->
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold">Endpoints</h2>
+
+      {endpoints.map((ep) => (
+        <div class="card bg-base-100 border border-base-300 shadow">
+          <div class="card-body p-5">
+            <div class="flex flex-wrap items-center gap-3">
+              <span class={`badge ${ep.color} badge-sm font-mono font-bold`}>{ep.method}</span>
+              <code class="font-mono text-sm bg-base-200 px-2 py-0.5 rounded">{ep.path}</code>
+              <span class="text-sm font-semibold">{ep.summary}</span>
+            </div>
+            <p class="text-base-content/70 text-sm mt-2">{ep.desc}</p>
+            <div class="mt-3 bg-base-200 rounded p-3">
+              <div class="text-xs text-base-content/50 mb-1">Response</div>
+              <code class="text-xs font-mono break-all">{ep.response}</code>
+            </div>
+            {ep.link && (
+              <div class="mt-3">
+                <a href={ep.link} target="_blank" rel="noreferrer"
+                   class="btn btn-xs btn-outline">
+                  Open ↗
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Tech stack -->
+    <div class="card bg-base-100 border border-base-300 p-5 space-y-3">
+      <h2 class="text-xl font-bold">Tech Stack</h2>
+      <div class="flex flex-wrap gap-2">
+        {["FastAPI", "Python 3.11", "Pydantic v2", "Pytest", "Docker", "GHCR", "GitHub Actions"].map(t => (
+          <span class="badge badge-outline">{t}</span>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  const API = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
+  const dot    = document.getElementById("api-dot2")!;
+  const status = document.getElementById("api-status2")!;
+
+  async function check() {
+    try {
+      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
+      if (r.ok) {
+        dot.className    = "inline-block w-3 h-3 rounded-full bg-green-400 animate-pulse flex-shrink-0";
+        status.textContent = "Online";
+        status.className = "text-green-400";
+      } else {
+        dot.className    = "inline-block w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0";
+        status.textContent = "Degraded";
+      }
+    } catch {
+      dot.className    = "inline-block w-3 h-3 rounded-full bg-red-500 flex-shrink-0";
+      status.textContent = "Offline";
+    }
+  }
+
+  check();
+  setInterval(check, 30000);
+</script>

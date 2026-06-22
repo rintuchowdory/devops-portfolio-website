@@ -41,6 +41,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             </div>
           </div>
 
+          <!-- Live API Status -->
+          <div class="mt-4 glass-panel p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-xs opacity-70 uppercase tracking-widest">Microservice API</div>
+              <a href="/api-docs" class="text-xs opacity-60 hover:opacity-100 underline">API Docs →</a>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+              <span id="api-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-gray-500"></span>
+              <span id="api-status" class="font-semibold text-sm">Checking…</span>
+              <span id="api-version" class="text-xs opacity-60"></span>
+            </div>
+          </div>
+
           <div class="mt-8 flex flex-wrap gap-3">
             <a class="btn border-0 text-white"
                style="background: linear-gradient(90deg,#a855f7,#ec4899);"
@@ -113,4 +126,32 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </div>
     </div>
   </div>
+
+<script>
+  const API = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
+  const dot    = document.getElementById("api-dot")!;
+  const status = document.getElementById("api-status")!;
+  const ver    = document.getElementById("api-version")!;
+
+  async function checkApi() {
+    try {
+      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) {
+        dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse";
+        status.textContent = "Online";
+        ver.textContent  = data.version ? `v${data.version}` : "";
+      } else {
+        dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-yellow-400";
+        status.textContent = "Degraded";
+      }
+    } catch {
+      dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-red-500";
+      status.textContent = "Offline";
+    }
+  }
+
+  checkApi();
+  setInterval(checkApi, 30000);
+</script>
 </BaseLayout>
