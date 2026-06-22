@@ -40,16 +40,19 @@ jobs:
           SITE: ${{ steps.pages.outputs.origin }}
           BASE: ${{ steps.pages.outputs.base_path }}
 
-      - name: Show dist structure and index.html
+      - name: Verify dist structure
         run: |
-          echo "=== DIST STRUCTURE ==="
+          echo "=== ALL FILES IN DIST ==="
           find dist -type f | sort
           echo ""
-          echo "=== index.html (first 20 lines) ==="
-          cat dist/index.html 2>/dev/null | head -20 || echo "NO index.html AT DIST ROOT"
-          echo ""
-          echo "=== Check for nested index ==="
-          find dist -name "index.html" | head -10
+          if [ -f dist/index.html ]; then
+            echo "FOUND: dist/index.html"
+            head -5 dist/index.html
+          else
+            echo "MISSING: dist/index.html - build output is wrong!"
+            find dist -name "index.html"
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
