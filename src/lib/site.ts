@@ -31,6 +31,8 @@ export const nav = [
   { path: "/", label: "Home" },
   { path: "/projects", label: "Projects" },
   { path: "/dashboard", label: "Live Dashboard" },
+  { path: "/architecture", label: "Architecture" },
+  { path: "/case-study", label: "Case study" },
   { path: "/api-docs", label: "API" },
   { path: "/roadmap", label: "Roadmap" },
   { path: "/blog", label: "Notes" },
@@ -115,10 +117,23 @@ export const endpoints = [
     detail: "Filter with status, namespace and tag. Returns up, degraded and down counts.",
   },
   {
+    method: "GET",
+    path: "/api/v1/pipelines",
+    summary: "Real CI runs",
+    detail:
+      "Reads the actual GitHub Actions runs of both portfolio repos. The response says source: github, or simulated when no token is configured.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/pipelines/{id}",
+    summary: "One run with its stages",
+    detail: "Each pipeline carries the job list as stages, plus a link to the run on github.com.",
+  },
+  {
     method: "POST",
     path: "/api/v1/pipelines/{id}/trigger",
-    summary: "Queue a pipeline run",
-    detail: "Accepts the request, answers 202 and returns the queued run.",
+    summary: "Queue a run",
+    detail: "Answers 202 in demo mode. Real GitHub runs return 409 with the command that actually starts one.",
   },
   {
     method: "GET",

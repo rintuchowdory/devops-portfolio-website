@@ -275,9 +275,12 @@ function logColor(l: string) {
     <section>
       <div class="sec-hd">
         <div class="sec-title">CI/CD Pipelines</div>
-        <div style="display:flex;gap:6px">
-          <div class="sec-badge" style="color:var(--blue)">{pipelines.running} running</div>
-          <div class="sec-badge" style="color:var(--red)">{pipelines.failed} failed</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="sec-badge" id="pipe-source" style="color:var(--teal)">
+            {pipelines.source === "github" ? "LIVE · GITHUB ACTIONS" : "DEMO DATA"}
+          </div>
+          <div class="sec-badge" id="pipe-run" style="color:var(--blue)">{pipelines.running} running</div>
+          <div class="sec-badge" id="pipe-fail" style="color:var(--red)">{pipelines.failed} failed</div>
         </div>
       </div>
       <div class="row row-3" id="pipelines-grid">
@@ -295,7 +298,14 @@ function logColor(l: string) {
                 </div>
               </div>
               <div class="pipe-meta">
-                <div>sha: <span>{pipe.commit_sha}</span></div>
+                <div>
+                  sha:{" "}
+                  {pipe.url ? (
+                    <a href={pipe.url} target="_blank" rel="noreferrer" style="color:inherit;text-decoration:underline">{pipe.commit_sha}</a>
+                  ) : (
+                    <span>{pipe.commit_sha}</span>
+                  )}
+                </div>
                 <div>by: <span>{pipe.author}</span></div>
                 <div>{pipe.triggered_at}</div>
               </div>
@@ -416,12 +426,68 @@ function logColor(l: string) {
     } catch {}
   }
 
+  // Pipelines are real GitHub runs, so they change while the page is open.
+  function esc(value: string) {
+    return String(value ?? "").replace(/[&<>"]/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+  }
+
+  function stageLabel(status: string) {
+    return status === "passed" ? "s-ok" : status === "running" ? "s-run" : status === "failed" ? "s-fail" : "s-wait";
+  }
+
+  function pipelineCard(p: any) {
+    const col = p.status === "passed" ? "var(--teal)" : p.status === "running" ? "var(--blue)" : "var(--red)";
+    const stages = (p.stages ?? []).map((st: any) => `
+      <div class="stage">
+        <div class="stage-ic ${stageLabel(st.status)}">${
+          st.status === "passed" ? "\u2713" : st.status === "running" ? "\u25b6" : st.status === "failed" ? "\u2717" : "\u00b7"
+        }</div>
+        <div class="stage-name">${esc(st.name)}</div>
+        <div class="stage-dur">${st.duration_sec ? `${st.duration_sec}s` : st.status}</div>
+      </div>`).join("");
+    const sha = p.url
+      ? `<a href="${esc(p.url)}" target="_blank" rel="noreferrer" style="color:inherit;text-decoration:underline">${esc(p.commit_sha)}</a>`
+      : `<span>${esc(p.commit_sha)}</span>`;
+    return `
+      <div class="card">
+        <div class="svc-top" style="margin-bottom:8px">
+          <div>
+            <div class="svc-name">${esc(p.service)}</div>
+            <div class="svc-desc" style="margin-top:2px">${esc(p.branch)}</div>
+          </div>
+          <div class="badge" style="color:${col};border-color:${col}55;background:${col}15">
+            ${p.status === "passed" ? "PASS" : p.status === "failed" ? "FAIL" : p.status === "running" ? "RUN" : "WAIT"}
+          </div>
+        </div>
+        <div class="pipe-meta">
+          <div>sha: ${sha}</div>
+          <div>by: <span>${esc(p.author)}</span></div>
+          <div>${esc(p.triggered_at)}</div>
+        </div>
+        ${stages}
+      </div>`;
+  }
+
+  async function pollPipelines() {
+    try {
+      const data = await fetch(`${BASE}/api/v1/pipelines?limit=6`).then((r) => r.json());
+      document.getElementById("pipe-run")!.textContent = `${data.running} running`;
+      document.getElementById("pipe-fail")!.textContent = `${data.failed} failed`;
+      document.getElementById("pipe-source")!.textContent =
+        data.source === "github" ? "LIVE \u00b7 GITHUB ACTIONS" : "DEMO DATA";
+      document.getElementById("pipelines-grid")!.innerHTML = data.pipelines.map(pipelineCard).join("");
+    } catch {}
+  }
+
   // Refresh once on load so the baked-in numbers are not shown stale.
   pollSummary();
   pollLogs();
+  pollPipelines();
 
-  setInterval(pollSummary, 5000);
-  setInterval(pollLogs,    4000);
+  setInterval(pollSummary,  5000);
+  setInterval(pollLogs,     4000);
+  setInterval(pollPipelines, 15000);
 </script>
 
 </body>

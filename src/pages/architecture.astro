@@ -1,0 +1,166 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { href, site } from "../lib/site";
+---
+
+<BaseLayout
+  title="Architecture | Rintu Chowdory"
+  description="How the portfolio is put together: an Astro site on GitHub Pages, a FastAPI service on Vercel, GitHub Actions shipping both, and one endpoint that reports the real pipeline."
+>
+  <header class="max-w-3xl">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Architecture</p>
+    <h1 class="mt-3 text-3xl font-bold text-white sm:text-4xl">How the pieces fit</h1>
+    <p class="mt-3 text-slate-400">
+      Two repositories, one delivery path. The site is static, the API is serverless and the CI
+      numbers on the dashboard come from the same GitHub Actions runs that shipped this page.
+    </p>
+  </header>
+
+  <!-- DIAGRAM -->
+  <section class="glass-panel mt-8 overflow-hidden p-4 sm:p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Request and build path</h2>
+      <a class="text-xs text-indigo-300 hover:text-white" href={href("/case-study")}>Why it is built this way</a>
+    </div>
+
+    <svg viewBox="0 0 1000 420" class="mt-5 w-full" role="img" aria-label="Diagram: a push runs GitHub Actions, which publishes a container image to GHCR and a static build to GitHub Pages; the browser loads the site and calls a FastAPI service on Vercel, which reads workflow runs from the GitHub API.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6b85" />
+        </marker>
+        <linearGradient id="halo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7c6cff" stop-opacity="0.18" />
+          <stop offset="1" stop-color="#38bdf8" stop-opacity="0.06" />
+        </linearGradient>
+      </defs>
+
+      <!-- column labels -->
+      <text x="40" y="26" fill="#7b8aa3" font-size="11" letter-spacing="2">BUILD</text>
+      <text x="420" y="26" fill="#7b8aa3" font-size="11" letter-spacing="2">ARTEFACTS</text>
+      <text x="760" y="26" fill="#7b8aa3" font-size="11" letter-spacing="2">RUNTIME</text>
+
+      <!-- build column -->
+      <rect x="40" y="44" width="250" height="72" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="58" y="72" fill="#e7eefc" font-size="15" font-weight="600">git push to main</text>
+      <text x="58" y="94" fill="#8fa1bb" font-size="12">rintuchowdory / devops-portfolio-*</text>
+
+      <rect x="40" y="140" width="250" height="120" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="58" y="168" fill="#e7eefc" font-size="15" font-weight="600">GitHub Actions</text>
+      <text x="58" y="190" fill="#8fa1bb" font-size="12">ci.yml · ruff, pytest 3.11-3.13</text>
+      <text x="58" y="209" fill="#8fa1bb" font-size="12">build, Trivy scan, smoke test</text>
+      <text x="58" y="228" fill="#8fa1bb" font-size="12">deploy.yml · Pages build</text>
+      <text x="58" y="247" fill="#8fa1bb" font-size="12">fail closed on a missing page</text>
+
+      <rect x="40" y="284" width="250" height="76" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="58" y="312" fill="#e7eefc" font-size="15" font-weight="600">GHCR</text>
+      <text x="58" y="334" fill="#8fa1bb" font-size="12">tagged image, provenance, SBOM</text>
+
+      <!-- artefact column -->
+      <rect x="400" y="120" width="240" height="86" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="418" y="148" fill="#e7eefc" font-size="15" font-weight="600">GitHub Pages</text>
+      <text x="418" y="170" fill="#8fa1bb" font-size="12">8 static pages, no server</text>
+      <text x="418" y="189" fill="#8fa1bb" font-size="12">headline numbers built in</text>
+
+      <rect x="400" y="240" width="240" height="86" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="418" y="268" fill="#e7eefc" font-size="15" font-weight="600">Vercel · FastAPI</text>
+      <text x="418" y="290" fill="#8fa1bb" font-size="12">/health · /metrics · /api/v1</text>
+      <text x="418" y="309" fill="#8fa1bb" font-size="12">serverless, JSON errors</text>
+
+      <!-- runtime column -->
+      <rect x="740" y="120" width="220" height="76" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="758" y="148" fill="#e7eefc" font-size="15" font-weight="600">Browser</text>
+      <text x="758" y="170" fill="#8fa1bb" font-size="12">polls every 4-5 s</text>
+
+      <rect x="740" y="230" width="220" height="96" rx="10" fill="url(#halo)" stroke="#2a3550" />
+      <text x="758" y="258" fill="#e7eefc" font-size="15" font-weight="600">GitHub API</text>
+      <text x="758" y="280" fill="#8fa1bb" font-size="12">real workflow runs</text>
+      <text x="758" y="299" fill="#8fa1bb" font-size="12">60 s cache per worker</text>
+      <text x="758" y="318" fill="#8fa1bb" font-size="12">falls back to demo data</text>
+
+      <!-- arrows -->
+      <line x1="290" y1="80" x2="395" y2="80" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" opacity="0" />
+      <line x1="290" y1="80" x2="330" y2="80" stroke="#5b6b85" stroke-width="1.5" />
+      <path d="M 330 80 L 330 163 L 395 163" fill="none" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" />
+      <path d="M 290 200 L 340 200 L 340 283" fill="none" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" />
+      <line x1="640" y1="163" x2="735" y2="158" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" />
+      <line x1="640" y1="283" x2="735" y2="283" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" />
+      <path d="M 850 196 L 850 225" fill="none" stroke="#5b6b85" stroke-width="1.5" marker-end="url(#arrow)" />
+      <path d="M 740 258 L 660 258 L 660 320 L 645 320" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+
+      <text x="700" y="205" fill="#5b6b85" font-size="11">fetch (CORS)</text>
+      <text x="470" y="345" fill="#22c55e" font-size="11">runs reported back to the dashboard</text>
+    </svg>
+  </section>
+
+  <!-- BUILD PATH -->
+  <section class="mt-10 grid gap-5 lg:grid-cols-2">
+    <article class="glass-panel p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">Build path</h2>
+      <ol class="mt-4 space-y-3 text-sm text-slate-400">
+        <li><span class="mono text-indigo-300">1.</span> A push to <span class="mono text-slate-200">main</span> starts two workflows: <span class="mono text-slate-200">ci.yml</span> in the microservice and <span class="mono text-slate-200">deploy.yml</span> in this site.</li>
+        <li><span class="mono text-indigo-300">2.</span> CI lints, then runs the suite on Python 3.11, 3.12 and 3.13, so a version-specific break cannot hide behind a green matrix.</li>
+        <li><span class="mono text-indigo-300">3.</span> The image is built, scanned and smoke tested by actually starting it and hitting <span class="mono text-slate-200">/health</span>, then pushed to GHCR with provenance and an SBOM.</li>
+        <li><span class="mono text-indigo-300">4.</span> The site build fetches the API while rendering, so the headline numbers are baked into static HTML. The deploy job fails if a page or the CSS bundle is missing.</li>
+      </ol>
+    </article>
+
+    <article class="glass-panel p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">Runtime path</h2>
+      <ol class="mt-4 space-y-3 text-sm text-slate-400">
+        <li><span class="mono text-indigo-300">1.</span> The browser loads static HTML from Pages. Nothing is server-rendered, so the first paint never waits for the API.</li>
+        <li><span class="mono text-indigo-300">2.</span> Two small inline scripts poll <span class="mono text-slate-200">/health</span>, the summary, the log feed and the pipeline list every few seconds.</li>
+        <li><span class="mono text-indigo-300">3.</span> The API reads workflow runs from the GitHub API through a 60 second cache, so a busy dashboard costs GitHub one request a minute rather than one per refresh.</li>
+        <li><span class="mono text-indigo-300">4.</span> Every fetch fails soft. Cold start, rate limit or an outage leaves the last numbers in place instead of an empty panel.</li>
+      </ol>
+    </article>
+  </section>
+
+  <!-- TRADE OFFS -->
+  <section class="mt-10">
+    <h2 class="text-lg font-semibold text-white">Trade-offs I made on purpose</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Decision</th>
+            <th>Why</th>
+            <th>What it costs</th>
+          </tr>
+        </thead>
+        <tbody class="text-slate-400">
+          <tr>
+            <td class="text-slate-200">Static site plus a separate API</td>
+            <td>Free hosting, nothing to patch on a server, and the split is the actual thing a DevOps portfolio should demonstrate.</td>
+            <td>Two deploys, and a CORS allow-list to keep honest.</td>
+          </tr>
+          <tr>
+            <td class="text-slate-200">Serverless instead of a container platform</td>
+            <td>The account's free container slots were full, and a running URL beats a YAML file nobody executes.</td>
+            <td>Cold starts of about half a second, and no long-lived background workers.</td>
+          </tr>
+          <tr>
+            <td class="text-slate-200">Real CI data, demo telemetry elsewhere</td>
+            <td>Fabricated dashboards are the fastest way to lose a technical reader. Pipelines are the one thing I can source truthfully for free.</td>
+            <td>The response has to say which is which, so <span class="mono">source</span> is part of the contract.</td>
+          </tr>
+          <tr>
+            <td class="text-slate-200">Cache in front of the GitHub API</td>
+            <td>5000 requests an hour is plenty, but not if every browser refresh spends one.</td>
+            <td>Up to a minute of staleness, which is invisible next to a build that takes 80 seconds.</td>
+          </tr>
+          <tr>
+            <td class="text-slate-200">No Kubernetes, yet</td>
+            <td>A cluster I cannot afford would be a screenshot, not a skill.</td>
+            <td>The Kubernetes panel on the dashboard is clearly demo data until there is a real cluster behind it.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mt-10 flex flex-wrap gap-3">
+    <a class="btn border-0 bg-white text-[#05080f] hover:bg-slate-200" href={href("/case-study")}>Read the case study</a>
+    <a class="btn btn-outline border-white/25 text-white hover:bg-white/10" href={href("/dashboard")}>Open the dashboard</a>
+    <a class="btn btn-ghost text-slate-300" href={site.repoMicroservice} target="_blank" rel="noreferrer">Microservice source</a>
+  </section>
+</BaseLayout>

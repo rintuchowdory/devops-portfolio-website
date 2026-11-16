@@ -1,0 +1,188 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { href, site } from "../lib/site";
+
+const API = "https://devops-portfolio-microservice.vercel.app";
+
+const bugs = [
+  {
+    title: "A time series that crashed for ten minutes every hour",
+    symptom: "The metrics endpoint returned 500 whenever the current UTC minute was smaller than the number of points requested.",
+    cause:
+      "The series was built by subtracting from the minute field of the current timestamp. At 19:03 with ten points, minute arithmetic went negative and strftime raised ValueError.",
+    fix: "Build timestamps with timedelta offsets instead of editing the minute field, so no wall-clock value is ever computed by hand.",
+    guard: "A test that walks every minute of an hour and asserts the payload shape stays valid.",
+  },
+  {
+    title: "A settings bug that only appeared in production",
+    symptom: "The container exited on start with a JSON decode error, while the same code ran fine locally.",
+    cause:
+      "pydantic-settings decodes list-typed fields as JSON before validators run. The deployment set ALLOWED_ORIGINS=https://a,https://b, which is valid for pydantic but not for json.loads.",
+    fix: "Disable settings decoding and split comma separated values in a before-validator that also accepts a real JSON array.",
+    guard: "Tests for both a comma separated string and a JSON list, plus a plain wildcard.",
+  },
+  {
+    title: "A CI job that failed before running a single step",
+    symptom: "The security scan job failed during setup for two commits in a row, with no log output at all.",
+    cause:
+      "The action reference aquasecurity/trivy-action@0.28.0 does not exist, the project publishes v-prefixed tags. GitHub rejects the job while resolving actions, which is why nothing logged.",
+    fix: "Pin v0.36.0, and read the check annotations rather than assuming the failure was environmental.",
+    guard: "The scan runs inside the job that already has a working runner, so a bad reference cannot orphan a whole job.",
+  },
+];
+
+const evidence = [
+  { value: "60", label: "pytest cases", note: "every route, error shape, CORS preflight and the GitHub mapping" },
+  { value: "3", label: "Python versions", note: "3.11, 3.12 and 3.13 in the matrix" },
+  { value: "5", label: "CI jobs", note: "lint, three test jobs, image build with scan and smoke test" },
+  { value: "1", label: "real pipeline source", note: "the dashboard reads its own workflow runs, not invented ones" },
+];
+---
+
+<BaseLayout
+  title="Case study | Rintu Chowdory"
+  description="What this project is, what constrained it, what went wrong, and what the evidence actually proves. A DevOps case study with the failures left in."
+>
+  <header class="max-w-3xl">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Case study</p>
+    <h1 class="mt-3 text-3xl font-bold text-white sm:text-4xl">
+      A portfolio that reports on itself
+    </h1>
+    <p class="mt-3 text-slate-400">
+      Most portfolio projects show a screenshot of a green pipeline. This one reads its own
+      workflow runs from the GitHub API, so the numbers on the dashboard are the numbers of the
+      build that produced the page.
+    </p>
+  </header>
+
+  <div class="mt-6 flex flex-wrap gap-2">
+    <a class="btn btn-sm border-0 bg-white text-[#05080f] hover:bg-slate-200" href={href("/dashboard")}>Live dashboard</a>
+    <a class="btn btn-sm btn-outline border-white/25 text-white hover:bg-white/10" href={href("/architecture")}>Architecture</a>
+    <a class="btn btn-sm btn-ghost text-slate-300" href={`${API}/docs`} target="_blank" rel="noreferrer">Swagger</a>
+  </div>
+
+  <!-- PROBLEM -->
+  <section class="mt-12 grid gap-5 lg:grid-cols-3">
+    <article class="glass-panel p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">The problem</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-400">
+        I had repositories with tests and a Dockerfile, and nothing that proved either. A reader had
+        to trust a README. Worse, the first version of the dashboard showed six services, three
+        pipelines and nearly five thousand requests per minute that had never happened. Any engineer
+        spots invented telemetry in about thirty seconds.
+      </p>
+    </article>
+    <article class="glass-panel p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Constraints</h2>
+      <ul class="mt-3 space-y-2 text-sm text-slate-400">
+        <li>No budget. Free tiers only, which rules out a managed cluster.</li>
+        <li>The hosting account was already at its limit for free container services.</li>
+        <li>No real traffic, so latency figures had to be either measured or labelled as demo.</li>
+        <li>Every claim on the site has to be checkable by a stranger in a terminal.</li>
+      </ul>
+    </article>
+    <article class="glass-panel p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">The bet</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-400">
+        Fix one thing properly: make the CI data real. Real runs have real failures, real durations
+        and real awkward states like a run that fails before it starts. That is worth more than a
+        dozen decorative panels, and it forces the API to handle rate limits, cold starts and
+        partial outages the way a production service has to.
+      </p>
+    </article>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section class="mt-12">
+    <h2 class="text-lg font-semibold text-white">The evidence</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {evidence.map((item) => (
+        <div class="glass-panel p-5">
+          <div class="mono text-3xl font-bold text-white">{item.value}</div>
+          <div class="mt-1 text-xs font-semibold uppercase tracking-wider text-indigo-300">{item.label}</div>
+          <p class="mt-2 text-xs leading-relaxed text-slate-500">{item.note}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="glass-panel mono mt-4 overflow-x-auto p-5 text-xs text-slate-400">
+      <div class="text-slate-500"># everything below is public, no login</div>
+      <div class="mt-2">curl -s {API}/health</div>
+      <div>curl -s {API}/api/v1/pipelines | jq '.source, .pipelines[0].service'</div>
+      <div>curl -s {API}/metrics | head -20</div>
+      <div>curl -s {API}/api/v1/services/nope</div>
+    </div>
+  </section>
+
+  <!-- BUGS -->
+  <section class="mt-12">
+    <h2 class="text-lg font-semibold text-white">Three bugs worth keeping in the story</h2>
+    <p class="mt-2 max-w-2xl text-sm text-slate-400">
+      None of these were caught by reading the code. Each one now has a test or a structural fix
+      behind it, which is the part that matters.
+    </p>
+
+    <div class="mt-5 space-y-4">
+      {bugs.map((bug, index) => (
+        <article class="glass-panel p-5 sm:p-6">
+          <div class="flex items-start gap-4">
+            <span class="mono mt-0.5 text-xs text-slate-600">0{index + 1}</span>
+            <div>
+              <h3 class="text-base font-semibold text-white">{bug.title}</h3>
+              <dl class="mt-3 grid gap-3 text-sm text-slate-400 sm:grid-cols-2">
+                <div>
+                  <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">Symptom</dt>
+                  <dd class="mt-1 leading-relaxed">{bug.symptom}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cause</dt>
+                  <dd class="mt-1 leading-relaxed">{bug.cause}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">Fix</dt>
+                  <dd class="mt-1 leading-relaxed">{bug.fix}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Guard</dt>
+                  <dd class="mt-1 leading-relaxed text-emerald-100/80">{bug.guard}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- LIMITS -->
+  <section class="mt-12 grid gap-5 lg:grid-cols-2">
+    <article class="glass-panel p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">What this does not prove</h2>
+      <ul class="mt-4 space-y-3 text-sm text-slate-400">
+        <li>No production traffic, so the latency and uptime figures on the dashboard are demo data and labelled that way.</li>
+        <li>No cluster. The Kubernetes panel describes namespaces that do not exist yet.</li>
+        <li>One person, short history: there is no on-call rotation, no incident review and no scale story.</li>
+        <li>A single region, a single environment. Promotion gates are on the roadmap, not in the repo.</li>
+      </ul>
+      <p class="mt-4 text-sm text-slate-500">
+        Saying this out loud is the point. A portfolio that hides its limits reads like marketing.
+      </p>
+    </article>
+    <article class="glass-panel p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">What I would do next</h2>
+      <ol class="mt-4 space-y-3 text-sm text-slate-400">
+        <li><span class="text-slate-200">Postgres instead of the in-memory store</span>, with Alembic migrations, so pipeline history survives a deploy.</li>
+        <li><span class="text-slate-200">A load test in CI</span> with an SLO threshold, published as a chart, so "p95 under 200 ms" becomes a claim measured on every push.</li>
+        <li><span class="text-slate-200">Signed images and Dependabot</span>, closing the supply-chain gap between a scanned image and a trusted one.</li>
+        <li><span class="text-slate-200">Helm chart against kind</span>, with screenshots, and a real cluster only when one can be paid for.</li>
+      </ol>
+      <a class="mt-5 inline-block text-sm text-indigo-300 hover:text-white" href={href("/roadmap")}>See the roadmap</a>
+    </article>
+  </section>
+
+  <section class="mt-12 flex flex-wrap gap-3">
+    <a class="btn border-0 bg-white text-[#05080f] hover:bg-slate-200" href={href("/projects")}>The repositories</a>
+    <a class="btn btn-outline border-white/25 text-white hover:bg-white/10" href={site.repoWebsite} target="_blank" rel="noreferrer">Site source</a>
+    <a class="btn btn-ghost text-slate-300" href={site.repoMicroservice} target="_blank" rel="noreferrer">API source</a>
+  </section>
+</BaseLayout>

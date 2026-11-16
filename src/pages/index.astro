@@ -101,6 +101,27 @@ const featured = projects[0];
     </div>
   </section>
 
+  <section class="mt-14 grid gap-4 sm:grid-cols-2">
+    <a class="glass-panel card-lift group p-5 sm:p-6" href={href("/architecture")}>
+      <p class="mono text-xs uppercase tracking-widest text-sky-300">Architecture</p>
+      <h2 class="mt-2 text-lg font-semibold text-white">How the pieces fit</h2>
+      <p class="mt-2 text-sm leading-relaxed text-slate-400">
+        The build path and the request path on one page: what GitHub Actions produces, what Vercel
+        runs, and the trade-offs behind static hosting, serverless and a cached GitHub API.
+      </p>
+      <span class="mt-4 inline-block text-sm text-indigo-300 group-hover:text-white">See the diagram</span>
+    </a>
+    <a class="glass-panel card-lift group p-5 sm:p-6" href={href("/case-study")}>
+      <p class="mono text-xs uppercase tracking-widest text-emerald-300">Case study</p>
+      <h2 class="mt-2 text-lg font-semibold text-white">What went wrong, and what guards it now</h2>
+      <p class="mt-2 text-sm leading-relaxed text-slate-400">
+        Three bugs with symptom, cause, fix and the test that keeps them dead, plus an honest list
+        of what this project does not prove.
+      </p>
+      <span class="mt-4 inline-block text-sm text-indigo-300 group-hover:text-white">Read the write-up</span>
+    </a>
+  </section>
+
   <section class="mt-14 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
     <article class="glass-panel overflow-hidden">
       <div class="border-b border-white/10 p-5 sm:p-6">
