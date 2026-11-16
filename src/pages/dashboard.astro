@@ -416,6 +416,10 @@ function logColor(l: string) {
     } catch {}
   }
 
+  // Refresh once on load so the baked-in numbers are not shown stale.
+  pollSummary();
+  pollLogs();
+
   setInterval(pollSummary, 5000);
   setInterval(pollLogs,    4000);
 </script>
