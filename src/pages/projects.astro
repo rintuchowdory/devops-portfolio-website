@@ -1,65 +1,72 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const projects = [
-  {
-    name: "devops-portfolio-microservice",
-    desc: "FastAPI API with tests, Docker, GitHub Actions, and GHCR publish.",
-    url: "https://github.com/rintuchowdory/devops-portfolio-microservice",
-    tags: ["FastAPI", "Pytest", "Docker", "GHCR"],
-    badge: "https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml/badge.svg",
-    badgeUrl: "https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml",
-    extra: "/api-docs",
-    extraLabel: "API Docs",
-  },
-  {
-    name: "devops-portfolio-website",
-    desc: "Astro portfolio site with dashboard UI.",
-    url: "https://github.com/rintuchowdory/devops-portfolio-website",
-    tags: ["Astro", "Tailwind", "DaisyUI"],
-    badge: "https://github.com/rintuchowdory/devops-portfolio-website/actions/workflows/deploy.yml/badge.svg",
-    badgeUrl: "https://github.com/rintuchowdory/devops-portfolio-website/actions/workflows/deploy.yml",
-    extra: null,
-    extraLabel: null,
-  },
-];
+import { projects, href } from "../lib/site";
 ---
 
-<BaseLayout title="Projects | Rintu Chowdory">
-  <div class="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
-    <div class="flex items-end justify-between gap-3">
-      <div>
-        <h1 class="text-3xl font-bold">Projects</h1>
-        <p class="text-base-content/70">Portfolio projects with production style tooling.</p>
-      </div>
-      <a class="btn btn-outline btn-sm" href="/">Home</a>
-    </div>
+<BaseLayout
+  title="Projects | Rintu Chowdory"
+  description="The FastAPI microservice, its CI pipeline and this Astro site, with links to the live deployments and sources."
+>
+  <header class="max-w-2xl">
+    <h1 class="text-3xl font-bold text-white sm:text-4xl">Projects</h1>
+    <p class="mt-2 text-slate-400">
+      Two repositories that belong together: an API that is tested, containerised and deployed,
+      and the site you are reading that reports on it.
+    </p>
+  </header>
 
-    <div class="grid gap-4 md:grid-cols-2">
-      {projects.map((p) => (
-        <div class="card bg-base-100 shadow-xl border border-base-300">
-          <div class="card-body">
-            <h2 class="card-title">{p.name}</h2>
-            <p class="text-base-content/70">{p.desc}</p>
-            <div class="flex flex-wrap gap-2 mt-2">
-              {p.tags.map((t) => <span class="badge badge-outline">{t}</span>)}
-            </div>
-            {p.badge && (
-              <div class="mt-3">
-                <a href={p.badgeUrl} target="_blank" rel="noreferrer">
-                  <img src={p.badge} alt="CI status" class="h-5" />
-                </a>
-              </div>
-            )}
-            <div class="card-actions justify-end mt-4">
-              {p.extra && (
-                <a class="btn btn-outline btn-sm" href={p.extra}>{p.extraLabel}</a>
-              )}
-              <a class="btn btn-primary" href={p.url} target="_blank" rel="noreferrer">View Repo</a>
-            </div>
+  <div class="mt-8 grid gap-5 lg:grid-cols-2">
+    {projects.map((project) => (
+      <article class="glass-panel card-lift flex flex-col p-5 sm:p-6">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="mono text-base font-semibold text-white">{project.name}</h2>
+            <p class="mt-1 text-xs uppercase tracking-wider text-indigo-300">{project.role}</p>
           </div>
+          {project.badge && (
+            <a href={project.badge.href} target="_blank" rel="noreferrer" aria-label={project.badge.label}>
+              <img src={project.badge.src} alt={project.badge.label} class="h-5 opacity-90" loading="lazy" />
+            </a>
+          )}
         </div>
-      ))}
-    </div>
+
+        <p class="mt-4 text-sm leading-relaxed text-slate-400">{project.description}</p>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          {project.stack.map((tech) => (
+            <span class="badge badge-sm badge-outline border-white/20 text-slate-300">{tech}</span>
+          ))}
+        </div>
+
+        <div class="mt-auto flex flex-wrap gap-2 pt-6">
+          <a class="btn btn-sm border-0 bg-white text-[#05080f] hover:bg-slate-200" href={project.live} target="_blank" rel="noreferrer">
+            {project.liveLabel}
+          </a>
+          {project.extra && (
+            <a
+              class="btn btn-sm btn-outline border-white/25 text-white hover:bg-white/10"
+              href={project.extra.href.startsWith("http") ? project.extra.href : href(project.extra.href)}
+              target={project.extra.href.startsWith("http") ? "_blank" : undefined}
+              rel="noreferrer"
+            >
+              {project.extra.label}
+            </a>
+          )}
+          <a class="btn btn-sm btn-ghost text-slate-300" href={project.repo} target="_blank" rel="noreferrer">
+            Source
+          </a>
+        </div>
+      </article>
+    ))}
   </div>
+
+  <section class="glass-panel mt-8 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">How the two fit together</h2>
+    <ol class="mt-4 space-y-3 text-sm text-slate-400">
+      <li><span class="mono text-slate-200">1.</span> A push to the API repo runs lint and pytest on three Python versions, builds the image, boots it and polls <span class="mono text-slate-200">/health</span>.</li>
+      <li><span class="mono text-slate-200">2.</span> The image goes to GHCR with a semver, branch and <span class="mono text-slate-200">sha-</span> tag plus provenance and an SBOM.</li>
+      <li><span class="mono text-slate-200">3.</span> This site fetches the API at build time, then keeps polling in the browser for the live numbers.</li>
+      <li><span class="mono text-slate-200">4.</span> A push here lints nothing it cannot verify: the Pages workflow fails if the build output has no <span class="mono text-slate-200">index.html</span>.</li>
+    </ol>
+  </section>
 </BaseLayout>

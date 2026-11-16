@@ -7,6 +7,7 @@
  * polling every 5s for live updates via fetch.
  */
 import { api } from "../lib/api";
+import { API_BASE, href } from "../lib/site";
 
 // Fetch all data in parallel at request time
 let summary, services, pipelines, k8s, logs, apiOnline;
@@ -50,7 +51,9 @@ function logColor(l: string) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevOps Mesh — Live Dashboard</title>
+  <title>Live dashboard | Rintu Chowdory</title>
+  <meta name="description" content="Live telemetry from the devops-portfolio-microservice: services, pipelines, Kubernetes namespaces and logs, polled in the browser." />
+  <link rel="icon" href={href("/favicon.svg")} type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
@@ -171,11 +174,14 @@ function logColor(l: string) {
     }
   </style>
 </head>
-<body>
+<body data-api={API_BASE}>
 
 <!-- HEADER -->
 <header class="hdr">
-  <div class="logo">DEVOPS<em>.</em>MESH</div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a href={href("/")} class="logo" style="text-decoration:none">DEVOPS<em>.</em>MESH</a>
+    <a href={href("/projects")} style="font-size:11px;color:var(--dim);text-decoration:none">← portfolio</a>
+  </div>
   <div class="hdr-right">
     <div class={`api-pill ${apiOnline ? "ok" : "err"}`}>
       API {apiOnline ? "LIVE" : "OFFLINE"}
@@ -361,7 +367,7 @@ function logColor(l: string) {
 
 <!-- ── CLIENT-SIDE LIVE POLLING ── -->
 <script>
-  const BASE = "http://127.0.0.1:8000";
+  const BASE = document.body.dataset.api || "";
 
   // Clock
   const clk = document.getElementById("clock")!;

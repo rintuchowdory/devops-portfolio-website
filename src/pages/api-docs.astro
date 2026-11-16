@@ -1,159 +1,116 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { endpoints, API_BASE, href } from "../lib/site";
 
-const BASE_URL = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
-
-const endpoints = [
-  {
-    method: "GET",
-    path: "/health",
-    summary: "Health check",
-    desc: "Returns the current status and version of the API.",
-    response: `{ "status": "ok", "version": "1.0.0" }`,
-    color: "badge-success",
-  },
-  {
-    method: "GET",
-    path: "/",
-    summary: "Root",
-    desc: "Returns a welcome message confirming the API is reachable.",
-    response: `{ "message": "Hello from the DevOps Microservice!" }`,
-    color: "badge-success",
-  },
-  {
-    method: "GET",
-    path: "/docs",
-    summary: "Interactive API docs (Swagger UI)",
-    desc: "Auto-generated Swagger UI provided by FastAPI. Explore and test all endpoints interactively.",
-    response: "Opens Swagger UI in the browser.",
-    color: "badge-info",
-    link: `${BASE_URL}/docs`,
-  },
-  {
-    method: "GET",
-    path: "/redoc",
-    summary: "ReDoc documentation",
-    desc: "Alternative API reference rendered with ReDoc.",
-    response: "Opens ReDoc in the browser.",
-    color: "badge-info",
-    link: `${BASE_URL}/redoc`,
-  },
-];
+const methodClass: Record<string, string> = {
+  GET: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300",
+  POST: "border-sky-400/40 bg-sky-400/10 text-sky-300",
+};
 ---
 
-<BaseLayout title="API Docs | Rintu Chowdory">
-  <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+<BaseLayout
+  title="API | Rintu Chowdory"
+  description="Endpoints of the devops-portfolio-microservice FastAPI app, with the live base URL and links to Swagger."
+>
+  <header class="max-w-2xl">
+    <h1 class="text-3xl font-bold text-white sm:text-4xl">API reference</h1>
+    <p class="mt-2 text-slate-400">
+      FastAPI app from the microservice repo. The OpenAPI schema is generated from the code,
+      so Swagger is always in sync with what is deployed.
+    </p>
+  </header>
 
-    <!-- Header -->
-    <div class="flex items-end justify-between gap-3">
-      <div>
-        <h1 class="text-3xl font-bold">API Docs</h1>
-        <p class="text-base-content/70 mt-1">
-          devops-portfolio-microservice — FastAPI + Docker + GitHub Actions
-        </p>
-      </div>
-      <a class="btn btn-outline btn-sm" href="/projects">Projects</a>
+  <div class="glass-panel mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0">
+      <p class="text-xs uppercase tracking-wider text-slate-500">Base URL</p>
+      <a class="mono break-all text-sm text-indigo-300 hover:underline" href={API_BASE} target="_blank" rel="noreferrer">{API_BASE}</a>
     </div>
-
-    <!-- Live status bar -->
-    <div class="card bg-base-100 border border-base-300 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="flex items-center gap-3 flex-1">
-        <span id="api-dot2" class="inline-block w-3 h-3 rounded-full bg-gray-500 flex-shrink-0"></span>
-        <div>
-          <div class="font-semibold text-sm">
-            Live status: <span id="api-status2">Checking…</span>
-          </div>
-          <div class="text-xs text-base-content/50">{BASE_URL}</div>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <a class="btn btn-sm btn-outline" href={`${BASE_URL}/docs`} target="_blank" rel="noreferrer">
-          Swagger UI ↗
-        </a>
-        <a class="btn btn-sm btn-outline" href="https://github.com/rintuchowdory/devops-portfolio-microservice" target="_blank" rel="noreferrer">
-          GitHub ↗
-        </a>
-      </div>
+    <div class="flex flex-wrap gap-2">
+      <a class="btn btn-sm border-0 bg-white text-[#05080f] hover:bg-slate-200" href={`${API_BASE}/docs`} target="_blank" rel="noreferrer">Swagger UI</a>
+      <a class="btn btn-sm btn-outline border-white/25 text-white hover:bg-white/10" href={`${API_BASE}/redoc`} target="_blank" rel="noreferrer">ReDoc</a>
+      <a class="btn btn-sm btn-ghost text-slate-300" href={`${API_BASE}/metrics`} target="_blank" rel="noreferrer">/metrics</a>
     </div>
-
-    <!-- CI Badge -->
-    <div class="flex items-center gap-3">
-      <span class="text-sm text-base-content/60">CI/CD:</span>
-      <a href="https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml"
-         target="_blank" rel="noreferrer">
-        <img
-          src="https://github.com/rintuchowdory/devops-portfolio-microservice/actions/workflows/ci.yml/badge.svg"
-          alt="CI status"
-          class="h-5"
-        />
-      </a>
-    </div>
-
-    <!-- Endpoints -->
-    <div class="space-y-4">
-      <h2 class="text-xl font-bold">Endpoints</h2>
-
-      {endpoints.map((ep) => (
-        <div class="card bg-base-100 border border-base-300 shadow">
-          <div class="card-body p-5">
-            <div class="flex flex-wrap items-center gap-3">
-              <span class={`badge ${ep.color} badge-sm font-mono font-bold`}>{ep.method}</span>
-              <code class="font-mono text-sm bg-base-200 px-2 py-0.5 rounded">{ep.path}</code>
-              <span class="text-sm font-semibold">{ep.summary}</span>
-            </div>
-            <p class="text-base-content/70 text-sm mt-2">{ep.desc}</p>
-            <div class="mt-3 bg-base-200 rounded p-3">
-              <div class="text-xs text-base-content/50 mb-1">Response</div>
-              <code class="text-xs font-mono break-all">{ep.response}</code>
-            </div>
-            {ep.link && (
-              <div class="mt-3">
-                <a href={ep.link} target="_blank" rel="noreferrer"
-                   class="btn btn-xs btn-outline">
-                  Open ↗
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <!-- Tech stack -->
-    <div class="card bg-base-100 border border-base-300 p-5 space-y-3">
-      <h2 class="text-xl font-bold">Tech Stack</h2>
-      <div class="flex flex-wrap gap-2">
-        {["FastAPI", "Python 3.11", "Pydantic v2", "Pytest", "Docker", "GHCR", "GitHub Actions"].map(t => (
-          <span class="badge badge-outline">{t}</span>
-        ))}
-      </div>
-    </div>
-
   </div>
+
+  <div class="glass-panel mt-4 flex flex-wrap items-center gap-3 p-4">
+    <span id="probe-dot" class="inline-block h-2.5 w-2.5 rounded-full bg-slate-500" aria-hidden="true"></span>
+    <span id="probe-text" class="text-sm text-slate-300">Checking the live service…</span>
+    <span id="probe-meta" class="mono ml-auto text-xs text-slate-500"></span>
+  </div>
+
+  <div class="mt-8 overflow-hidden rounded-2xl border border-white/10">
+    <table class="w-full table-fixed border-collapse text-left">
+      <thead class="bg-white/5">
+        <tr class="text-xs uppercase tracking-wider text-slate-400">
+          <th class="w-20 p-3 font-medium">Method</th>
+          <th class="p-3 font-medium">Path</th>
+          <th class="hidden p-3 font-medium lg:table-cell">What it returns</th>
+        </tr>
+      </thead>
+      <tbody>
+        {endpoints.map((endpoint) => (
+          <tr class="border-t border-white/5 align-top hover:bg-white/5">
+            <td class="p-3">
+              <span class:list={["mono rounded border px-1.5 py-0.5 text-[10px] font-bold", methodClass[endpoint.method]]}>
+                {endpoint.method}
+              </span>
+            </td>
+            <td class="p-3">
+              <a class="mono text-sm text-slate-200 hover:text-white hover:underline" href={`${API_BASE}${endpoint.path.replace("{id}", "pipe-001")}`} target="_blank" rel="noreferrer">
+                {endpoint.path}
+              </a>
+              <p class="mt-1 text-xs text-slate-400">{endpoint.summary}</p>
+            </td>
+            <td class="hidden p-3 text-xs text-slate-400 lg:table-cell">{endpoint.detail}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <section class="glass-panel mt-6 p-5 sm:p-6">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Try it from a terminal</h2>
+    <pre class="mono mt-3 overflow-x-auto rounded-xl bg-[#05080f] p-4 text-xs leading-relaxed text-slate-300"><code>{`curl -s ${API_BASE}/health
+curl -s "${API_BASE}/api/v1/services?status=degraded"
+curl -s -X POST ${API_BASE}/api/v1/pipelines/pipe-003/trigger
+curl -s ${API_BASE}/metrics | head -20`}</code></pre>
+    <p class="mt-3 text-xs text-slate-500">
+      Errors come back as JSON with the original message, for example
+      <span class="mono text-slate-300">{'{"error":"Service...","status_code":404}'}</span>.
+      See <a class="link" href={href("/dashboard")}>the dashboard</a> for the same data rendered.
+    </p>
+  </section>
 </BaseLayout>
 
 <script>
-  const API = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
-  const dot    = document.getElementById("api-dot2")!;
-  const status = document.getElementById("api-status2")!;
+  import { API_BASE } from "../lib/site";
 
-  async function check() {
+  const dot = document.getElementById("probe-dot");
+  const text = document.getElementById("probe-text");
+  const meta = document.getElementById("probe-meta");
+
+  async function probe() {
+    const started = performance.now();
     try {
-      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
-      if (r.ok) {
-        dot.className    = "inline-block w-3 h-3 rounded-full bg-green-400 animate-pulse flex-shrink-0";
-        status.textContent = "Online";
-        status.className = "text-green-400";
+      const response = await fetch(`${API_BASE}/health`, { cache: "no-store", signal: AbortSignal.timeout(12000) });
+      const ms = Math.round(performance.now() - started);
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        if (dot) dot.className = "inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse";
+        if (text) text.textContent = `Online, version ${data.version ?? "unknown"}`;
+        if (meta) meta.textContent = `${ms} ms · env ${data.env ?? "-"}`;
       } else {
-        dot.className    = "inline-block w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0";
-        status.textContent = "Degraded";
+        if (dot) dot.className = "inline-block h-2.5 w-2.5 rounded-full bg-amber-400";
+        if (text) text.textContent = `Service answered ${response.status}`;
+        if (meta) meta.textContent = `${ms} ms`;
       }
     } catch {
-      dot.className    = "inline-block w-3 h-3 rounded-full bg-red-500 flex-shrink-0";
-      status.textContent = "Offline";
+      if (dot) dot.className = "inline-block h-2.5 w-2.5 rounded-full bg-rose-500";
+      if (text) text.textContent = "Unreachable from this browser";
+      if (meta) meta.textContent = "timeout";
     }
   }
 
-  check();
-  setInterval(check, 30000);
+  probe();
+  setInterval(probe, 60000);
 </script>

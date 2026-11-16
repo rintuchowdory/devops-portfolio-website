@@ -1,7 +1,24 @@
 ---
 import "../styles/global.css";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import { site, href } from "../lib/site";
 
-const { title = "DevOps Portfolio" } = Astro.props;
+interface Props {
+  title?: string;
+  description?: string;
+  /** Render without the standard page chrome (used by the dashboard). */
+  bare?: boolean;
+}
+
+const {
+  title = `${site.name} | DevOps portfolio`,
+  description = site.description,
+  bare = false,
+} = Astro.props;
+
+// Astro.url.pathname already contains the base path, so it must not be prefixed again.
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://rintuchowdory.github.io").toString();
 ---
 
 <!doctype html>
@@ -10,8 +27,29 @@ const { title = "DevOps Portfolio" } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={href("/favicon.svg")} type="image/svg+xml" />
+    <meta name="theme-color" content="#05080f" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="generator" content={Astro.generator} />
   </head>
-  <body class="min-h-screen bg-base-200">
-    <slot />
+  <body class="min-h-screen bg-base-200 text-base-content antialiased">
+    {bare ? <slot /> : (
+      <>
+        <Nav />
+        <main class="mx-auto w-full max-w-6xl px-4 pb-20 pt-10 sm:px-6">
+          <slot />
+        </main>
+        <Footer />
+      </>
+    )}
   </body>
 </html>

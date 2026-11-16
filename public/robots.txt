@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# Project page on GitHub Pages, served under /devops-portfolio-website/

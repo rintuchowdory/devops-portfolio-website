@@ -1,16 +1,83 @@
-@import "tailwindcss";.glass-panel {
-  background: rgba(17, 25, 40, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: night --default;
 }
 
+@plugin "daisyui/theme" {
+  name: "night";
+  default: true;
+  color-scheme: dark;
+  --color-base-100: #0b1220;
+  --color-base-200: #0a0f1a;
+  --color-base-300: #16203400;
+  --color-base-content: #dbe7fa;
+  --color-primary: #7c6cff;
+  --color-secondary: #22c55e;
+  --color-accent: #38bdf8;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #05080f;
+  color: #dbe7fa;
+  font-feature-settings: "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient background used by the hero and page headers */
 .bg-hero {
   background-image:
-    radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.45), transparent 40%),
-    radial-gradient(circle at 90% 20%, rgba(59, 130, 246, 0.45), transparent 45%),
-    radial-gradient(circle at 40% 90%, rgba(236, 72, 153, 0.35), transparent 50%),
-    linear-gradient(135deg, #0b1020, #050714);
+    radial-gradient(circle at 12% 8%, rgba(124, 108, 255, 0.28), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.22), transparent 46%),
+    radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.14), transparent 55%),
+    linear-gradient(160deg, #070b14 0%, #05080f 100%);
+}
+
+/* Thin grid, keeps the dark surfaces from looking flat */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at top, black 30%, transparent 78%);
+}
+
+.glass-panel {
+  background: rgba(13, 20, 34, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.card-lift {
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgba(124, 108, 255, 0.45);
+}
+
+.mono {
+  font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
+}
+
+/* Focus ring that stays visible on dark surfaces */
+:where(a, button):focus-visible {
+  outline: 2px solid #7c6cff;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

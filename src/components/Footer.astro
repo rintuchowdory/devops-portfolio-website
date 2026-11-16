@@ -1,0 +1,19 @@
+---
+import { site, href } from "../lib/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-white/10 bg-[#070b14]">
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <p>
+      Built by {site.name}. Static site on GitHub Pages, FastAPI behind it, both deployed by GitHub Actions.
+    </p>
+    <div class="flex flex-wrap items-center gap-4">
+      <a class="link link-hover" href={site.github} target="_blank" rel="noreferrer">GitHub</a>
+      <a class="link link-hover" href={href("/api-docs")}>API</a>
+      <a class="link link-hover" href={href("/dashboard")}>Dashboard</a>
+      <span class="text-slate-600">© {year}</span>
+    </div>
+  </div>
+</footer>

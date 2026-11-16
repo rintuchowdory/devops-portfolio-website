@@ -1,157 +1,202 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, href, skills, stats, projects, API_BASE } from "../lib/site";
+
+const featured = projects[0];
 ---
 
-<BaseLayout title="Rintu Chowdory | DevOps Portfolio">
-  <div class="bg-hero min-h-screen">
-    <div class="max-w-6xl mx-auto px-4 py-10">
-      <div class="grid lg:grid-cols-2 gap-8 items-center">
+<BaseLayout>
+  <section class="relative overflow-hidden rounded-3xl border border-white/10 bg-hero">
+    <div class="pointer-events-none absolute inset-0 bg-grid"></div>
+    <div class="relative grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:p-12">
+      <div>
+        <p class="mono text-xs uppercase tracking-[0.2em] text-indigo-300">{site.role}</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
+          {site.name}
+        </h1>
+        <p class="mt-4 max-w-xl text-lg text-slate-300">{site.tagline}</p>
 
-        <div class="glass-panel p-6 md:p-8 text-white">
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href={href("/projects")} class="btn border-0 bg-gradient-to-r from-indigo-500 to-sky-400 text-[#05080f] hover:brightness-110">
+            See the projects
+          </a>
+          <a href={href("/dashboard")} class="btn btn-outline border-white/25 text-white hover:bg-white/10">
+            Live dashboard
+          </a>
+          <a href={site.github} target="_blank" rel="noreferrer" class="btn btn-ghost text-slate-200">
+            GitHub
+          </a>
+        </div>
+
+        <dl class="mt-9 grid max-w-lg grid-cols-2 gap-3 sm:grid-cols-4">
+          {stats.map((stat) => (
+            <div class="glass-panel px-3 py-3">
+              <dt class="text-[11px] uppercase tracking-wider text-slate-400">{stat.label}</dt>
+              <dd class="mt-1 text-lg font-bold text-white">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div class="glass-panel flex flex-col justify-between p-5 sm:p-6">
+        <div>
           <div class="flex items-center justify-between">
-            <div class="text-sm opacity-80">DevOps Portfolio Dashboard</div>
-            <a class="btn btn-sm btn-outline text-white border-white/30"
-               href="https://github.com/rintuchowdory"
-               target="_blank" rel="noreferrer">
-              GitHub
-            </a>
+            <p class="mono text-xs uppercase tracking-widest text-slate-400">microservice api</p>
+            <a href={href("/api-docs")} class="text-xs text-indigo-300 underline-offset-4 hover:underline">Endpoints</a>
           </div>
 
-          <h1 class="text-4xl font-extrabold mt-6 leading-tight">Rintu Chowdory</h1>
-          <p class="mt-2 opacity-80">
-            Learning Linux, CI/CD, Docker, Kubernetes, GitHub, and automation by building real projects.
+          <div class="mt-4 flex items-center gap-3">
+            <span id="api-dot" class="inline-block h-2.5 w-2.5 rounded-full bg-slate-500" aria-hidden="true"></span>
+            <span id="api-status" class="text-sm font-semibold text-slate-200">Checking…</span>
+            <span id="api-version" class="mono text-xs text-slate-500"></span>
+          </div>
+
+          <p class="mt-3 text-xs leading-relaxed text-slate-400">
+            Measured live in your browser against
+            <span class="mono break-all text-slate-300">{API_BASE.replace("https://", "")}</span>.
+            The free tier sleeps, so the first call can take a few seconds.
           </p>
-
-          <div class="mt-6 grid grid-cols-2 gap-3">
-            <div class="glass-panel p-4">
-              <div class="text-xs opacity-70">Current Focus</div>
-              <div class="font-semibold">DevOps + Cloud</div>
-            </div>
-            <div class="glass-panel p-4">
-              <div class="text-xs opacity-70">Primary Stack</div>
-              <div class="font-semibold">FastAPI, Docker</div>
-            </div>
-            <div class="glass-panel p-4">
-              <div class="text-xs opacity-70">CI/CD</div>
-              <div class="font-semibold">GitHub Actions</div>
-            </div>
-            <div class="glass-panel p-4">
-              <div class="text-xs opacity-70">Next</div>
-              <div class="font-semibold">K8s + Helm</div>
-            </div>
-          </div>
-
-          <!-- Live API Status -->
-          <div class="mt-4 glass-panel p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-xs opacity-70 uppercase tracking-widest">Microservice API</div>
-              <a href="/api-docs" class="text-xs opacity-60 hover:opacity-100 underline">API Docs →</a>
-            </div>
-            <div class="flex items-center gap-3 mt-2">
-              <span id="api-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-gray-500"></span>
-              <span id="api-status" class="font-semibold text-sm">Checking…</span>
-              <span id="api-version" class="text-xs opacity-60"></span>
-            </div>
-          </div>
-
-          <div class="mt-8 flex flex-wrap gap-3">
-            <a class="btn border-0 text-white"
-               style="background: linear-gradient(90deg,#a855f7,#ec4899);"
-               href="/projects">
-              View Projects
-            </a>
-            <a class="btn btn-ghost text-white/90" href="/roadmap">Roadmap</a>
-            <a class="btn btn-ghost text-white/90" href="/blog">Blog</a>
-            <a class="btn btn-ghost text-white/90" href="/contact">Contact</a>
-          </div>
-
-          <div class="mt-8">
-            <div class="text-sm opacity-80 mb-2">Skills progress</div>
-
-            <div class="space-y-3">
-              <div>
-                <div class="flex justify-between text-xs opacity-80"><span>Linux</span><span>70%</span></div>
-                <progress class="progress progress-secondary w-full" value="70" max="100"></progress>
-              </div>
-              <div>
-                <div class="flex justify-between text-xs opacity-80"><span>Docker</span><span>65%</span></div>
-                <progress class="progress progress-accent w-full" value="65" max="100"></progress>
-              </div>
-              <div>
-                <div class="flex justify-between text-xs opacity-80"><span>CI/CD</span><span>60%</span></div>
-                <progress class="progress progress-info w-full" value="60" max="100"></progress>
-              </div>
-              <div>
-                <div class="flex justify-between text-xs opacity-80"><span>Kubernetes</span><span>40%</span></div>
-                <progress class="progress progress-primary w-full" value="40" max="100"></progress>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div class="relative">
-          <div class="rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-            <div class="h-[520px] bg-cover bg-center"
-                 style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80');">
-              <div class="h-full w-full bg-black/50 flex items-end">
-                <div class="p-6 md:p-8 text-white">
-                  <div class="text-sm opacity-80">Featured project</div>
-                  <div class="text-3xl font-bold">FastAPI Microservice</div>
-                  <p class="opacity-80 mt-1">Tests, Docker image build, and GHCR publish via GitHub Actions.</p>
-
-                  <div class="mt-4 flex gap-3">
-                    <a class="btn btn-sm btn-outline text-white border-white/30"
-                       href="https://github.com/rintuchowdory/devops-portfolio-microservice"
-                       target="_blank" rel="noreferrer">
-                      View Repo
-                    </a>
-                    <a class="btn btn-sm border-0 text-white"
-                       style="background: linear-gradient(90deg,#3b82f6,#22c55e);"
-                       href="/projects">
-                      See all
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-panel text-white p-4 md:p-5 max-w-sm absolute -bottom-6 left-6">
-            <div class="text-sm opacity-80">Portfolio goal</div>
-            <div class="font-semibold">Build real CI/CD + Kubernetes projects for my CV.</div>
-            <div class="text-xs opacity-70 mt-1">Next: deploy the API and show live status on the dashboard.</div>
-          </div>
+        <div class="mt-6 space-y-2 border-t border-white/10 pt-4 mono text-[11px] text-slate-400">
+          <div class="flex justify-between"><span>GET /health</span><span id="api-latency">-</span></div>
+          <div class="flex justify-between"><span>uptime</span><span id="api-uptime">-</span></div>
+          <div class="flex justify-between"><span>env</span><span id="api-env">-</span></div>
         </div>
-
       </div>
     </div>
-  </div>
+  </section>
+
+  <section class="mt-14">
+    <div class="flex items-end justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-white">What I can prove</h2>
+        <p class="mt-1 text-sm text-slate-400">Every claim below is a file in a public repo or a live endpoint.</p>
+      </div>
+      <a href={href("/projects")} class="hidden text-sm text-indigo-300 hover:underline sm:inline">All projects</a>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <article class="glass-panel card-lift p-5">
+        <h3 class="font-semibold text-white">Tested, not just typed</h3>
+        <p class="mt-2 text-sm text-slate-400">
+          45 pytest cases cover every route, the error payloads, CORS preflight and two real
+          production bugs the suite now blocks from coming back.
+        </p>
+      </article>
+      <article class="glass-panel card-lift p-5">
+        <h3 class="font-semibold text-white">Shipped as an image</h3>
+        <p class="mt-2 text-sm text-slate-400">
+          Multi-stage Dockerfile, unprivileged user, healthcheck. Every push to main publishes
+          a tagged image to GHCR with provenance and an SBOM.
+        </p>
+      </article>
+      <article class="glass-panel card-lift p-5">
+        <h3 class="font-semibold text-white">Observable by default</h3>
+        <p class="mt-2 text-sm text-slate-400">
+          Prometheus text metrics with route templates as labels, so a scrape stays cheap and
+          one slow endpoint cannot flood the series.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mt-14 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <article class="glass-panel overflow-hidden">
+      <div class="border-b border-white/10 p-5 sm:p-6">
+        <p class="mono text-xs uppercase tracking-widest text-indigo-300">Featured project</p>
+        <h2 class="mt-2 text-2xl font-bold text-white">{featured.name}</h2>
+        <p class="mt-2 text-sm text-slate-400">{featured.description}</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          {featured.stack.map((tech) => (
+            <span class="badge badge-outline border-white/20 text-slate-300">{tech}</span>
+          ))}
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3 p-5 sm:p-6">
+        <a class="btn btn-sm border-0 bg-white text-[#05080f] hover:bg-slate-200" href={featured.live} target="_blank" rel="noreferrer">
+          {featured.liveLabel}
+        </a>
+        <a class="btn btn-sm btn-outline border-white/25 text-white hover:bg-white/10" href={featured.extra.href} target="_blank" rel="noreferrer">
+          {featured.extra.label}
+        </a>
+        <a class="btn btn-sm btn-ghost text-slate-300" href={featured.repo} target="_blank" rel="noreferrer">
+          Source
+        </a>
+      </div>
+    </article>
+
+    <article class="glass-panel p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">Where I am, honestly</h2>
+      <p class="mt-1 text-xs text-slate-400">Self-assessment, not certification.</p>
+      <ul class="mt-5 space-y-4">
+        {skills.map((skill) => (
+          <li>
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="font-medium text-slate-200">{skill.name}</span>
+              <span class="mono text-slate-500">{skill.value}%</span>
+            </div>
+            <progress class="progress progress-primary mt-1 h-1.5 w-full" value={skill.value} max="100"></progress>
+            <p class="mt-1 text-[11px] text-slate-500">{skill.note}</p>
+          </li>
+        ))}
+      </ul>
+      <a href={href("/roadmap")} class="mt-5 inline-block text-sm text-indigo-300 hover:underline">What comes next</a>
+    </article>
+  </section>
+</BaseLayout>
 
 <script>
-  const API = "https://rintuchowdory-devops-portfolio-microservice.onrender.com";
-  const dot    = document.getElementById("api-dot")!;
-  const status = document.getElementById("api-status")!;
-  const ver    = document.getElementById("api-version")!;
+  import { API_BASE } from "../lib/site";
+
+  const dot = document.getElementById("api-dot");
+  const status = document.getElementById("api-status");
+  const version = document.getElementById("api-version");
+  const latency = document.getElementById("api-latency");
+  const uptime = document.getElementById("api-uptime");
+  const env = document.getElementById("api-env");
+
+  const setState = (colour: string, label: string) => {
+    if (dot) dot.className = `inline-block h-2.5 w-2.5 rounded-full ${colour}`;
+    if (status) status.textContent = label;
+  };
+
+  const humanUptime = (seconds: number) => {
+    if (!Number.isFinite(seconds)) return "-";
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (d) return `${d}d ${h}h`;
+    if (h) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
 
   async function checkApi() {
+    const startedAt = performance.now();
+    setState("bg-slate-500", "Checking…");
     try {
-      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
-      const data = await r.json().catch(() => ({}));
-      if (r.ok) {
-        dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse";
-        status.textContent = "Online";
-        ver.textContent  = data.version ? `v${data.version}` : "";
-      } else {
-        dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-yellow-400";
-        status.textContent = "Degraded";
+      const response = await fetch(`${API_BASE}/health`, {
+        signal: AbortSignal.timeout(12000),
+        cache: "no-store",
+      });
+      const elapsed = Math.round(performance.now() - startedAt);
+      if (!response.ok) {
+        setState("bg-amber-400", `Responding with ${response.status}`);
+        if (latency) latency.textContent = `${elapsed} ms`;
+        return;
       }
+      const data = await response.json();
+      setState("bg-emerald-400 animate-pulse", "Online");
+      if (version) version.textContent = data.version ? `v${data.version}` : "";
+      if (latency) latency.textContent = `${elapsed} ms`;
+      if (uptime) uptime.textContent = humanUptime(data.uptime_seconds);
+      if (env) env.textContent = data.env ?? "-";
     } catch {
-      dot.className    = "inline-block w-2.5 h-2.5 rounded-full bg-red-500";
-      status.textContent = "Offline";
+      setState("bg-rose-500", "Unreachable");
+      if (latency) latency.textContent = "timeout";
     }
   }
 
   checkApi();
-  setInterval(checkApi, 30000);
+  setInterval(checkApi, 60000);
 </script>
-</BaseLayout>

@@ -1,7 +1,7 @@
 {
   "name": "devops-portfolio-website",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -20,5 +20,7 @@
     "@tailwindcss/postcss": "^4.2.2",
     "daisyui": "^5.5.19",
     "postcss": "^8.5.8"
-  }
+  },
+  "description": "Rintu Chowdory's DevOps portfolio: Astro site with a live dashboard on top of a FastAPI microservice.",
+  "private": true
 }

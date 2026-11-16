@@ -39,20 +39,18 @@ jobs:
         env:
           SITE: ${{ steps.pages.outputs.origin }}
           BASE: ${{ steps.pages.outputs.base_path }}
+          PUBLIC_API_BASE: https://devops-portfolio-microservice.vercel.app
 
-      - name: Verify dist structure
+      - name: Verify build output
         run: |
-          echo "=== ALL FILES IN DIST ==="
-          find dist -type f | sort
-          echo ""
-          if [ -f dist/index.html ]; then
-            echo "FOUND: dist/index.html"
-            head -5 dist/index.html
-          else
-            echo "MISSING: dist/index.html - build output is wrong!"
-            find dist -name "index.html"
-            exit 1
-          fi
+          set -euo pipefail
+          test -f dist/index.html || { echo "dist/index.html is missing"; find dist -name 'index.html'; exit 1; }
+          test -f dist/dashboard/index.html || { echo "the dashboard page did not build"; exit 1; }
+          test -f dist/404.html || { echo "404.html is missing"; exit 1; }
+          grep -q "daisyui" dist/_astro/*.css || { echo "daisyUI never made it into the CSS bundle"; exit 1; }
+          test -f dist/favicon.svg && test -f dist/robots.txt
+          echo "build output verified"
+          du -sh dist
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
